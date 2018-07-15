@@ -1,0 +1,11 @@
+{
+    "Resources" : {
+        "SomeBucketName" : {
+            "Type" : "AWS::S3::Bucket",
+            "Properties" : {
+                "AccessControl" : "Private"
+            }
+
+        }
+    }
+}
