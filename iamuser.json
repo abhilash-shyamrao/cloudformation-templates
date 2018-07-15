@@ -1,13 +1,13 @@
 {
     "Resources" : {
-        "AdminUser"{
+        "AdminUser" : {
             "Type" : "AWS::IAM::User",
             "Properties" : {
                 "LoginProfile": {
                     "Password" : "redbag123",
                     "PasswordResetRequired" : "False"
                 },
-                "UserName" : "Abhilash",                
+                "UserName" : "Abhilash"
             }
         }
 
