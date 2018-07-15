@@ -3,7 +3,7 @@
         "SomeBucketName" : {
             "Type" : "AWS::S3::Bucket",
             "Properties" : {
-                "AccessControl" : "Private"
+                "AccessControl" : "PublicRead"
             }
 
         }
