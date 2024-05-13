@@ -1,0 +1,89 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation Template to create a Step Functions State Machine with Lambda integration.",
+  "Resources": {
+    "HelloWorldFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn"] },
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": ["\n", [
+              "def handler(event, context):",
+              "    return 'Hello World from Lambda!'"
+            ]]
+          }
+        },
+        "Runtime": "python3.8"
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": ["lambda.amazonaws.com"] },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "LambdaLogging",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:*:*:*"
+            }]
+          }
+        }]
+      }
+    },
+    "StepFunction": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "RoleArn": { "Fn::GetAtt": ["StepFunctionsExecutionRole", "Arn"] },
+        "DefinitionString": {
+          "Fn::Sub": "{\"Comment\": \"A simple AWS Step Functions state machine that executes a Lambda function.\", \"StartAt\": \"HelloWorld\", \"States\": {\"HelloWorld\": {\"Type\": \"Task\", \"Resource\": \"${HelloWorldFunction.Arn}\", \"End\": true}}}"
+        }
+      }
+    },
+    "StepFunctionsExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": ["states.amazonaws.com"] },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "StepFunctionsLambdaInvocation",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": ["lambda:InvokeFunction"],
+              "Resource": { "Fn::GetAtt": ["HelloWorldFunction", "Arn"] }
+            }]
+          }
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "StateMachineArn": {
+      "Description": "The ARN of the State Machine",
+      "Value": { "Ref": "StepFunction" }
+    }
+  }
+}
